@@ -1,0 +1,58 @@
+<main class="bg-slate-100 text-slate-950">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-950">Prioridades de ticket</h1>
+        <p class="mt-1 text-sm text-slate-600">Administra niveles de urgencia y orden de atención.</p>
+      </div>
+
+      <button
+        class="h-11 rounded-lg bg-teal-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+        type="button"
+        [disabled]="saving()"
+        (click)="openCreateModal()"
+      >
+        Nueva prioridad
+      </button>
+    </div>
+  </header>
+
+  <section class="mx-auto max-w-7xl px-6 py-8">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm font-medium text-slate-700">Listado</p>
+        <p class="text-sm text-slate-500">{{ totalRegistros() }} prioridades registradas</p>
+      </div>
+
+      <label class="inline-flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm">
+        <input
+          class="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+          type="checkbox"
+          [checked]="incluirInactivos()"
+          (change)="toggleInactivos()"
+        />
+        Incluir inactivas
+      </label>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <app-prioridad-ticket-list
+      [prioridades]="prioridades()"
+      [loading]="loading()"
+      [saving]="saving()"
+      [pagina]="pagina()"
+      [tamanoPagina]="tamanoPagina()"
+      [totalRegistros]="totalRegistros()"
+      [totalPaginas]="totalPaginas()"
+      (edit)="openEditModal($event)"
+      (delete)="openDeleteModal($event)"
+      (pageChange)="changePage($event)"
+      (pageSizeChange)="changePageSize($event)"
+    />
+  </section>
+</main>

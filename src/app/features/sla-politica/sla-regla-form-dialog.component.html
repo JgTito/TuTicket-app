@@ -1,0 +1,15 @@
+<div class="bg-white text-slate-950">
+  <div class="border-b border-slate-200 px-6 py-5"><h2 class="text-xl font-semibold">{{ title }}</h2><p class="mt-1 text-sm text-slate-500">Politica: {{ data.politica.nombre }}</p></div>
+  <form class="space-y-5 px-6 py-5" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block"><span class="text-sm font-medium text-slate-700">Prioridad</span><select class="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm" formControlName="idPrioridadTicket"><option [value]="0">Selecciona prioridad</option>@for (prioridad of data.prioridades; track prioridad.idPrioridadTicket) { <option [value]="prioridad.idPrioridadTicket">{{ prioridad.nombre }} (nivel {{ prioridad.nivel }})</option> }</select>@if (form.controls.idPrioridadTicket.touched && form.controls.idPrioridadTicket.invalid) { <span class="mt-2 block text-sm text-red-600">Selecciona prioridad.</span> }</label>
+      <label class="block"><span class="text-sm font-medium text-slate-700">Categoria</span><select class="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm" formControlName="idCategoriaTicket"><option [value]="0">Global</option>@for (categoria of data.categorias; track categoria.idCategoriaTicket) { <option [value]="categoria.idCategoriaTicket">{{ categoria.nombre }}</option> }</select></label>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block"><span class="text-sm font-medium text-slate-700">Min. primera respuesta</span><input class="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm" type="number" min="1" formControlName="minutosPrimeraRespuesta" /></label>
+      <label class="block"><span class="text-sm font-medium text-slate-700">Min. resolucion</span><input class="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm" type="number" min="1" formControlName="minutosResolucion" /></label>
+    </div>
+    <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-700"><input class="h-4 w-4 rounded border-slate-300 text-teal-600" type="checkbox" formControlName="activo" />Activa</label>
+    <div class="flex justify-end gap-3 border-t border-slate-200 pt-5"><button class="h-10 rounded-lg border border-slate-300 px-4 text-sm font-semibold" type="button" (click)="close()">Cancelar</button><button class="h-10 rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white" type="submit">{{ submitText }}</button></div>
+  </form>
+</div>

@@ -1,0 +1,52 @@
+<section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+  <div class="border-b border-slate-200 px-5 py-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <p class="text-sm font-medium text-teal-700">Reglas SLA</p>
+        <h2 class="mt-1 text-xl font-semibold text-slate-950">{{ politica()?.nombre || 'Selecciona una politica' }}</h2>
+        <p class="mt-1 text-sm text-slate-500">{{ politica() ? totalRegistros() + ' reglas registradas' : 'Elige una politica para administrar sus reglas.' }}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+          <input class="h-4 w-4 rounded border-slate-300 text-teal-600" type="checkbox" [checked]="incluirInactivos()" [disabled]="!politica()" (change)="toggleInactivos.emit()" />
+          Inactivas
+        </label>
+        <button class="h-10 rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white disabled:bg-slate-300" type="button" [disabled]="!politica() || saving()" (click)="add.emit()">Agregar regla</button>
+      </div>
+    </div>
+  </div>
+  @if (!politica()) {
+    <div class="p-8 text-center text-sm text-slate-500">No hay politica seleccionada.</div>
+  } @else if (loading()) {
+    <div class="p-8 text-center text-sm text-slate-500">Cargando reglas...</div>
+  } @else if (reglas().length === 0) {
+    <div class="p-8 text-center text-sm text-slate-500">Esta politica no tiene reglas activas.</div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50"><tr>
+          <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Prioridad / Categoria</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Tiempos</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Activo</th>
+          <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-slate-500">Acciones</th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (regla of reglas(); track regla.idSlaRegla) {
+            <tr class="hover:bg-slate-50">
+              <td class="px-5 py-4"><p class="text-sm font-semibold">{{ regla.nombrePrioridadTicket }}</p><p class="mt-1 text-sm text-slate-500">{{ regla.nombreCategoriaTicket || 'Global' }}</p></td>
+              <td class="px-5 py-4 text-sm text-slate-600">Primera respuesta: {{ regla.minutosPrimeraRespuesta }} min<br />Resolucion: {{ regla.minutosResolucion }} min</td>
+              <td class="px-5 py-4"><span class="rounded-full px-3 py-1 text-xs font-semibold" [class.bg-emerald-50]="regla.activo" [class.text-emerald-700]="regla.activo" [class.bg-slate-100]="!regla.activo" [class.text-slate-500]="!regla.activo">{{ regla.activo ? 'Activa' : 'Inactiva' }}</span></td>
+              <td class="whitespace-nowrap px-5 py-4 text-right"><button class="rounded-lg px-3 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50" [disabled]="saving()" (click)="edit.emit(regla)">Editar</button><button class="rounded-lg px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:text-slate-400" [disabled]="saving() || !regla.activo" (click)="delete.emit(regla)">Eliminar</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (politica()) {
+    <div class="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3 text-sm text-slate-600"><span>Filas</span><select class="h-9 rounded-lg border border-slate-300 bg-white px-3" [value]="tamanoPagina()" [disabled]="loading() || saving()" (change)="emitPageSizeChange($event)">@for (option of pageSizeOptions; track option) { <option [value]="option">{{ option }}</option> }</select></div>
+      <div class="flex items-center gap-2"><span class="text-sm text-slate-600">{{ firstRecord() }}-{{ lastRecord() }} de {{ totalRegistros() }}</span><button class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold disabled:text-slate-400" [disabled]="loading() || saving() || pagina() <= 1" (click)="pageChange.emit(pagina() - 1)">Anterior</button><span class="text-sm font-medium">Pagina {{ totalPaginas() === 0 ? 0 : pagina() }} de {{ totalPaginas() }}</span><button class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold disabled:text-slate-400" [disabled]="loading() || saving() || pagina() >= totalPaginas()" (click)="pageChange.emit(pagina() + 1)">Siguiente</button></div>
+    </div>
+  }
+</section>

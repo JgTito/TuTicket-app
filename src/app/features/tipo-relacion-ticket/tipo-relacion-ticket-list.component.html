@@ -1,0 +1,101 @@
+<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+  @if (loading()) {
+    <div class="p-8 text-center text-sm text-slate-500">Cargando tipos de relacion...</div>
+  } @else if (tiposRelacion().length === 0) {
+    <div class="p-8 text-center">
+      <p class="text-sm font-medium text-slate-700">No hay tipos para mostrar.</p>
+      <p class="mt-1 text-sm text-slate-500">Crea el primer tipo de relacion entre tickets.</p>
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Tipo</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Activo</th>
+            <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          @for (tipoRelacion of tiposRelacion(); track tipoRelacion.idTipoRelacionTicket) {
+            <tr class="hover:bg-slate-50">
+              <td class="px-5 py-4">
+                <p class="text-sm font-semibold text-slate-950">{{ tipoRelacion.nombre }}</p>
+                <p class="mt-1 max-w-xl text-sm text-slate-500">{{ tipoRelacion.descripcion || 'Sin descripcion' }}</p>
+              </td>
+              <td class="whitespace-nowrap px-5 py-4">
+                @if (tipoRelacion.activo) {
+                  <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Activo</span>
+                } @else {
+                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">Inactivo</span>
+                }
+              </td>
+              <td class="whitespace-nowrap px-5 py-4 text-right">
+                <button
+                  class="rounded-lg px-3 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                  type="button"
+                  [disabled]="saving()"
+                  (click)="edit.emit(tipoRelacion)"
+                >
+                  Editar
+                </button>
+                <button
+                  class="rounded-lg px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                  type="button"
+                  [disabled]="saving() || !tipoRelacion.activo"
+                  (click)="delete.emit(tipoRelacion)"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <div class="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-3 text-sm text-slate-600">
+      <span>Filas por pagina</span>
+      <select
+        class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+        [value]="tamanoPagina()"
+        [disabled]="loading() || saving()"
+        (change)="emitPageSizeChange($event)"
+      >
+        @for (option of pageSizeOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <p class="text-sm text-slate-600">
+        {{ firstRecord() }}-{{ lastRecord() }} de {{ totalRegistros() }}
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button
+          class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+          type="button"
+          [disabled]="loading() || saving() || pagina() <= 1"
+          (click)="previousPage()"
+        >
+          Anterior
+        </button>
+        <span class="min-w-24 text-center text-sm font-medium text-slate-700">
+          Pagina {{ totalPaginas() === 0 ? 0 : pagina() }} de {{ totalPaginas() }}
+        </span>
+        <button
+          class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+          type="button"
+          [disabled]="loading() || saving() || pagina() >= totalPaginas()"
+          (click)="nextPage()"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
