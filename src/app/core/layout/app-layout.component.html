@@ -19,7 +19,12 @@
             routerLinkActive="bg-teal-50 text-teal-700"
             [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
           >
-            {{ item.label }}
+            <span>{{ item.label }}</span>
+            @if (item.route === '/notificaciones' && notificacionService.unreadCount() > 0) {
+              <span class="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold leading-none text-white">
+                {{ notificacionService.unreadCount() > 99 ? '99+' : notificacionService.unreadCount() }}
+              </span>
+            }
           </a>
         }
       </nav>
@@ -28,6 +33,7 @@
         <div class="min-w-0 text-sm">
           <p class="max-w-52 truncate font-semibold text-slate-950">{{ authService.currentUser()?.nombreCompleto }}</p>
           <p class="max-w-52 truncate text-slate-500">{{ authService.currentUser()?.email }}</p>
+          <p class="max-w-52 truncate text-slate-500">{{ authService.currentUser()?.roles }}</p>      
         </div>
         <button
           class="h-9 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"

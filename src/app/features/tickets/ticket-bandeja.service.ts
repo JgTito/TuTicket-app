@@ -33,9 +33,8 @@ export class TicketBandejaService {
   private readonly subcategoriaSelectUrl = `${environment.apiUrl}/SubcategoriaTicket/select`;
   private readonly usuarioSelectUrl = `${environment.apiUrl}/Usuario/select`;
 
-  getTickets(incluirInactivos: boolean, pagina: number, tamanoPagina: number, filters?: TicketFilters) {
+  getTickets(pagina: number, tamanoPagina: number, filters?: TicketFilters) {
     let params = new HttpParams()
-      .set('incluirInactivos', incluirInactivos)
       .set('pagina', pagina)
       .set('tamanoPagina', tamanoPagina);
 
@@ -100,17 +99,15 @@ export class TicketBandejaService {
     return this.http.get<SubcategoriaTicketOption[]>(this.subcategoriaSelectUrl, { params });
   }
 
-  getAdjuntos(idTicket: number, incluirInactivos = false, pagina = 1, tamanoPagina = 5) {
+  getAdjuntos(idTicket: number, pagina = 1, tamanoPagina = 5) {
     const params = new HttpParams()
-      .set('incluirInactivos', incluirInactivos)
       .set('pagina', pagina)
       .set('tamanoPagina', tamanoPagina);
     return this.http.get<PaginatedResult<TicketAdjunto>>(`${this.ticketUrl}/${idTicket}/adjuntos`, { params });
   }
 
-  getBitacora(idTicket: number, incluirInactivos = false, pagina = 1, tamanoPagina = 5) {
+  getBitacora(idTicket: number, pagina = 1, tamanoPagina = 5) {
     const params = new HttpParams()
-      .set('incluirInactivos', incluirInactivos)
       .set('pagina', pagina)
       .set('tamanoPagina', tamanoPagina);
     return this.http.get<PaginatedResult<TicketBitacora>>(`${this.ticketUrl}/${idTicket}/bitacora`, { params });

@@ -1,19 +1,5 @@
 import { Routes } from '@angular/router';
 import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guard';
-import { AppLayoutComponent } from './core/layout/app-layout.component';
-import { DashboardPage } from './features/dashboard/dashboard.page';
-import { EquipoSoportePage } from './features/equipo-soporte/equipo-soporte.page';
-import { CategoriaResponsablePage } from './features/categoria-responsable/categoria-responsable.page';
-import { CategoriaTicketPage } from './features/categoria-ticket/categoria-ticket.page';
-import { EstadoTicketPage } from './features/estado-ticket/estado-ticket.page';
-import { PrioridadTicketPage } from './features/prioridad-ticket/prioridad-ticket.page';
-import { SubcategoriaTicketPage } from './features/subcategoria-ticket/subcategoria-ticket.page';
-import { TipoRelacionTicketPage } from './features/tipo-relacion-ticket/tipo-relacion-ticket.page';
-import { SlaPoliticaPage } from './features/sla-politica/sla-politica.page';
-import { TicketBandejaPage } from './features/tickets/ticket-bandeja.page';
-import { TicketDetallePage } from './features/tickets/ticket-detalle.page';
-import { LoginPage } from './features/auth/login.page';
-import { RegisterPage } from './features/auth/register.page';
 
 export const routes: Routes = [
   {
@@ -23,69 +9,78 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    component: LoginPage,
+    loadComponent: () => import('./features/auth/login.page').then((m) => m.LoginPage),
     canActivate: [guestGuard]
   },
   {
     path: 'register',
-    component: RegisterPage,
+    loadComponent: () => import('./features/auth/register.page').then((m) => m.RegisterPage),
     canActivate: [guestGuard]
   },
   {
     path: '',
-    component: AppLayoutComponent,
+    loadComponent: () => import('./core/layout/app-layout.component').then((m) => m.AppLayoutComponent),
     canActivate: [authGuard],
     children: [
       {
         path: 'app',
-        component: DashboardPage
+        loadComponent: () => import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage)
       },
       {
         path: 'tickets',
-        component: TicketBandejaPage
+        loadComponent: () => import('./features/tickets/ticket-bandeja.page').then((m) => m.TicketBandejaPage)
       },
       {
         path: 'tickets/:id',
-        component: TicketDetallePage
+        loadComponent: () => import('./features/tickets/ticket-detalle.page').then((m) => m.TicketDetallePage)
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () => import('./features/notificaciones/notificaciones.page').then((m) => m.NotificacionesPage)
       },
       {
         path: 'admin/estados-ticket',
-        component: EstadoTicketPage,
+        loadComponent: () => import('./features/estado-ticket/estado-ticket.page').then((m) => m.EstadoTicketPage),
+        canActivate: [adminGuard]
+      },
+      {
+        path: 'admin/flujos-estado-ticket',
+        loadComponent: () => import('./features/flujo-estado-ticket/flujo-estado-ticket.page').then((m) => m.FlujoEstadoTicketPage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/prioridades-ticket',
-        component: PrioridadTicketPage,
+        loadComponent: () => import('./features/prioridad-ticket/prioridad-ticket.page').then((m) => m.PrioridadTicketPage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/categorias-ticket',
-        component: CategoriaTicketPage,
+        loadComponent: () => import('./features/categoria-ticket/categoria-ticket.page').then((m) => m.CategoriaTicketPage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/categorias-responsables',
-        component: CategoriaResponsablePage,
+        loadComponent: () => import('./features/categoria-responsable/categoria-responsable.page').then((m) => m.CategoriaResponsablePage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/subcategorias-ticket',
-        component: SubcategoriaTicketPage,
+        loadComponent: () => import('./features/subcategoria-ticket/subcategoria-ticket.page').then((m) => m.SubcategoriaTicketPage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/equipos-soporte',
-        component: EquipoSoportePage,
+        loadComponent: () => import('./features/equipo-soporte/equipo-soporte.page').then((m) => m.EquipoSoportePage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/tipos-relacion-ticket',
-        component: TipoRelacionTicketPage,
+        loadComponent: () => import('./features/tipo-relacion-ticket/tipo-relacion-ticket.page').then((m) => m.TipoRelacionTicketPage),
         canActivate: [adminGuard]
       },
       {
         path: 'admin/sla-politicas',
-        component: SlaPoliticaPage,
+        loadComponent: () => import('./features/sla-politica/sla-politica.page').then((m) => m.SlaPoliticaPage),
         canActivate: [adminGuard]
       }
     ]

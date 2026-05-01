@@ -9,6 +9,11 @@ import {
   TicketAdjuntoUploadDialogData
 } from './ticket-adjunto-upload-dialog.component';
 import {
+  TicketAceptarResolucionDialogComponent,
+  TicketAceptarResolucionDialogData,
+  TicketAceptarResolucionDialogResult
+} from './ticket-aceptar-resolucion-dialog.component';
+import {
   TicketAsignarUsuarioDialogComponent,
   TicketAsignarUsuarioDialogData,
   TicketAsignarUsuarioDialogResult
@@ -18,6 +23,11 @@ import {
   TicketBitacoraFormDialogData,
   TicketBitacoraFormDialogResult
 } from './ticket-bitacora-form-dialog.component';
+import {
+  TicketCancelarDialogComponent,
+  TicketCancelarDialogData,
+  TicketCancelarDialogResult
+} from './ticket-cancelar-dialog.component';
 import {
   EstadoDisponibleTicket,
   Ticket,
@@ -36,6 +46,8 @@ import {
 } from './ticket-cambiar-estado-dialog.component';
 
 type DetailTab = 'resumen' | 'sla' | 'adjuntos' | 'bitacora' | 'historial' | 'relaciones';
+const ESTADO_CERRADO_ID = 9;
+const ESTADO_CANCELADO_ID = 10;
 
 @Component({
   selector: 'app-ticket-detalle-page',
@@ -134,7 +146,7 @@ export class TicketDetallePage {
     this.errorMessage.set(null);
 
     this.ticketService
-      .getAdjuntos(idTicket, false, this.adjuntosPagina(), this.adjuntosTamanoPagina())
+      .getAdjuntos(idTicket, this.adjuntosPagina(), this.adjuntosTamanoPagina())
       .pipe(finalize(() => this.loadingAdjuntos.set(false)))
       .subscribe({
         next: (resultado) => {
@@ -162,7 +174,7 @@ export class TicketDetallePage {
     this.errorMessage.set(null);
 
     this.ticketService
-      .getBitacora(idTicket, false, this.bitacoraPagina(), this.bitacoraTamanoPagina())
+      .getBitacora(idTicket, this.bitacoraPagina(), this.bitacoraTamanoPagina())
       .pipe(finalize(() => this.loadingBitacora.set(false)))
       .subscribe({
         next: (resultado) => {
@@ -291,11 +303,12 @@ export class TicketDetallePage {
     }
 
     this.dialog
-      .open<TicketCambiarEstadoDialogComponent, TicketCambiarEstadoDialogData, TicketCambiarEstadoDialogResult>(
+      .open<TicketCambiarEstadoDialogComponent, TicketCambiarEstadoDialogData, boolean>(
         TicketCambiarEstadoDialogComponent,
         {
           width: '560px',
           data: {
+            idTicket: ticket.idTicket,
             codigoTicket: ticket.codigo,
             estadoActual: ticket.nombreEstadoTicket,
             estados: this.estadosDisponibles()
@@ -304,8 +317,76 @@ export class TicketDetallePage {
         }
       )
       .afterClosed()
+      .subscribe((changed) => {
+        if (changed) {
+          this.loadTicket(ticket.idTicket);
+          this.activeTab.set('resumen');
+        }
+      });
+  }
+
+  esSolicitanteTicket(): boolean {
+    const ticket = this.ticket();
+    const user = this.authService.currentUser();
+
+    return !!ticket && !!user?.id && ticket.idUsuarioSolicitante === user.id;
+  }
+
+  puedeCambiarEstado(): boolean {
+    const roles = this.authService.currentUser()?.roles ?? [];
+    return roles.includes('Administrador') || roles.includes('ResolvedorTicket');
+  }
+
+  puedeAceptarResolucion(): boolean {
+    return this.estadosDisponibles().some((estado) => estado.idEstadoTicket === ESTADO_CERRADO_ID);
+  }
+
+  puedeCancelarTicket(): boolean {
+    return this.estadosDisponibles().some((estado) => estado.idEstadoTicket === ESTADO_CANCELADO_ID);
+  }
+
+  openAceptarResolucionModal(): void {
+    const ticket = this.ticket();
+
+    if (!ticket || !this.esSolicitanteTicket() || !this.puedeAceptarResolucion()) {
+      return;
+    }
+
+    this.dialog
+      .open<TicketAceptarResolucionDialogComponent, TicketAceptarResolucionDialogData, TicketAceptarResolucionDialogResult>(
+        TicketAceptarResolucionDialogComponent,
+        {
+          width: '560px',
+          data: { codigoTicket: ticket.codigo },
+          disableClose: this.changingEstado()
+        }
+      )
+      .afterClosed()
       .subscribe((request) => {
-        if (request) this.cambiarEstado(ticket.idTicket, request);
+        if (request) {
+          this.aceptarResolucion(ticket.idTicket, request);
+        }
+      });
+  }
+
+  openCancelarTicketModal(): void {
+    const ticket = this.ticket();
+
+    if (!ticket || !this.esSolicitanteTicket() || !this.puedeCancelarTicket()) {
+      return;
+    }
+
+    this.dialog
+      .open<TicketCancelarDialogComponent, TicketCancelarDialogData, TicketCancelarDialogResult>(TicketCancelarDialogComponent, {
+        width: '560px',
+        data: { codigoTicket: ticket.codigo },
+        disableClose: this.changingEstado()
+      })
+      .afterClosed()
+      .subscribe((request) => {
+        if (request) {
+          this.cancelarTicket(ticket.idTicket, request);
+        }
       });
   }
 
@@ -479,6 +560,20 @@ export class TicketDetallePage {
       });
   }
 
+  private aceptarResolucion(idTicket: number, request: TicketAceptarResolucionDialogResult): void {
+    this.cambiarEstado(idTicket, {
+      idEstadoTicket: ESTADO_CERRADO_ID,
+      comentario: request.comentario
+    });
+  }
+
+  private cancelarTicket(idTicket: number, request: TicketCancelarDialogResult): void {
+    this.cambiarEstado(idTicket, {
+      idEstadoTicket: ESTADO_CANCELADO_ID,
+      comentario: request.comentario
+    });
+  }
+
   private showAsignarUsuarioModal(ticket: Ticket): void {
     this.dialog
       .open<TicketAsignarUsuarioDialogComponent, TicketAsignarUsuarioDialogData, TicketAsignarUsuarioDialogResult>(
@@ -542,8 +637,7 @@ export class TicketDetallePage {
       fechaPrimeraRespuesta: this.pickNullableString(item, 'fechaPrimeraRespuesta', 'FechaPrimeraRespuesta'),
       fechaResolucion: this.pickNullableString(item, 'fechaResolucion', 'FechaResolucion'),
       fechaCierre: this.pickNullableString(item, 'fechaCierre', 'FechaCierre'),
-      cantidadReaperturas: this.pickNumber(item, 'cantidadReaperturas', 'CantidadReaperturas'),
-      activo: this.pickBoolean(item, 'activo', 'Activo')
+      cantidadReaperturas: this.pickNumber(item, 'cantidadReaperturas', 'CantidadReaperturas')
     };
   }
 

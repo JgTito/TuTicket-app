@@ -41,7 +41,6 @@ export class TicketBandejaPage {
   readonly loadingSubcategoriasFiltro = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly incluirInactivos = signal(false);
   readonly filtroEstado = signal(0);
   readonly filtroPrioridad = signal(0);
   readonly filtroCategoria = signal(0);
@@ -98,7 +97,7 @@ export class TicketBandejaPage {
     this.errorMessage.set(null);
 
     this.ticketService
-      .getTickets(this.incluirInactivos(), this.pagina(), this.tamanoPagina(), this.buildFilters())
+      .getTickets(this.pagina(), this.tamanoPagina(), this.buildFilters())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (resultado) => {
@@ -141,12 +140,6 @@ export class TicketBandejaPage {
       .subscribe((request) => {
         if (request) this.createTicket(request);
       });
-  }
-
-  toggleInactivos(): void {
-    this.incluirInactivos.update((value) => !value);
-    this.pagina.set(1);
-    this.loadTickets();
   }
 
   changeFiltroCategoria(event: Event): void {
@@ -264,8 +257,7 @@ export class TicketBandejaPage {
       fechaPrimeraRespuesta: this.pickNullableString(item, 'fechaPrimeraRespuesta', 'FechaPrimeraRespuesta'),
       fechaResolucion: this.pickNullableString(item, 'fechaResolucion', 'FechaResolucion'),
       fechaCierre: this.pickNullableString(item, 'fechaCierre', 'FechaCierre'),
-      cantidadReaperturas: this.pickNumber(item, 'cantidadReaperturas', 'CantidadReaperturas'),
-      activo: this.pickBoolean(item, 'activo', 'Activo')
+      cantidadReaperturas: this.pickNumber(item, 'cantidadReaperturas', 'CantidadReaperturas')
     };
   }
 

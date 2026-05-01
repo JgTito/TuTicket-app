@@ -1,0 +1,26 @@
+<div class="bg-white text-slate-950">
+  <div class="border-b border-slate-200 px-6 py-5">
+    <h2 class="text-xl font-semibold">Cancelar ticket</h2>
+    <p class="mt-1 text-sm text-slate-500">El ticket {{ data.codigoTicket }} quedara cancelado.</p>
+  </div>
+
+  <form class="space-y-5 px-6 py-5" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="block">
+      <span class="text-sm font-medium text-slate-700">Comentario obligatorio</span>
+      <textarea
+        class="mt-2 min-h-28 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm text-slate-950 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+        maxlength="500"
+        formControlName="comentario"
+        placeholder="Indica el motivo de la cancelacion"
+      ></textarea>
+      @if (form.controls.comentario.touched && form.controls.comentario.invalid) {
+        <span class="mt-2 block text-sm text-red-600">El comentario es obligatorio y no puede superar 500 caracteres.</span>
+      }
+    </label>
+
+    <div class="flex justify-end gap-3 border-t border-slate-200 pt-5">
+      <button class="h-10 rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" type="button" (click)="close()">Cancelar</button>
+      <button class="h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700" type="submit">Cancelar ticket</button>
+    </div>
+  </form>
+</div>

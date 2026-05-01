@@ -21,7 +21,6 @@ export interface Ticket {
   fechaResolucion: string | null;
   fechaCierre: string | null;
   cantidadReaperturas: number;
-  activo: boolean;
 }
 
 export interface CrearTicketRequest {

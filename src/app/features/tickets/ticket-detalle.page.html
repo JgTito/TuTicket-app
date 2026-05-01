@@ -19,14 +19,36 @@
             </button>
           }
 
-          <button
-            class="h-11 rounded-lg bg-teal-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-            type="button"
-            [disabled]="changingEstado() || estadosDisponibles().length === 0"
-            (click)="openCambiarEstadoModal()"
-          >
-            Cambiar estado
-          </button>
+          @if (esSolicitanteTicket()) {
+            <button
+              class="h-11 rounded-lg border border-red-200 bg-white px-5 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+              type="button"
+              [disabled]="changingEstado() || !puedeCancelarTicket()"
+              (click)="openCancelarTicketModal()"
+            >
+              Cancelar ticket
+            </button>
+
+            <button
+              class="h-11 rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              type="button"
+              [disabled]="changingEstado() || !puedeAceptarResolucion()"
+              (click)="openAceptarResolucionModal()"
+            >
+              Aceptar resolucion
+            </button>
+          }
+
+          @if (puedeCambiarEstado()) {
+            <button
+              class="h-11 rounded-lg bg-teal-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              type="button"
+              [disabled]="changingEstado() || estadosDisponibles().length === 0"
+              (click)="openCambiarEstadoModal()"
+            >
+              Cambiar estado
+            </button>
+          }
         </div>
       }
     </div>
@@ -51,11 +73,6 @@
             <div class="flex flex-wrap gap-2">
               <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{{ ticket()?.nombreEstadoTicket }}</span>
               <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">{{ ticket()?.nombrePrioridadTicket }}</span>
-              @if (ticket()?.activo) {
-                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Activo</span>
-              } @else {
-                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">Inactivo</span>
-              }
             </div>
           </div>
         </div>

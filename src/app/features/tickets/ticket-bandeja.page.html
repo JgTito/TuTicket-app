@@ -7,16 +7,6 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-          <input
-            class="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-            type="checkbox"
-            [checked]="incluirInactivos()"
-            (change)="toggleInactivos()"
-          />
-          Inactivos
-        </label>
-
         <button
           class="h-11 rounded-lg bg-teal-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
           type="button"
@@ -41,7 +31,14 @@
       </div>
 
       <div class="border-b border-slate-200 bg-slate-50 px-5 py-4">
-        <div class="grid gap-4 lg:grid-cols-4">
+        <div class="mb-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">Filtros</p>
+            <p class="text-sm text-slate-500">Refina la bandeja por estado, prioridad, categoria y fechas.</p>
+          </div>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <mat-form-field appearance="outline" class="w-full lg:col-span-2">
             <mat-label>Buscar</mat-label>
             <input
@@ -81,9 +78,7 @@
               }
             </mat-select>
           </mat-form-field>
-        </div>
 
-        <div class="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-5">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Categoria</mat-label>
             <mat-select
@@ -111,9 +106,7 @@
               }
             </mat-select>
           </mat-form-field>
-        </div>
 
-        <div class="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Creacion</mat-label>
             <mat-date-range-input [rangePicker]="creacionPicker">
