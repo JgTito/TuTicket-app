@@ -32,6 +32,7 @@ export class TicketBandejaService {
   private readonly prioridadSelectUrl = `${environment.apiUrl}/PrioridadTicket/select`;
   private readonly subcategoriaSelectUrl = `${environment.apiUrl}/SubcategoriaTicket/select`;
   private readonly usuarioSelectUrl = `${environment.apiUrl}/Usuario/select`;
+  private readonly responsableTicketSelectUrl = `${environment.apiUrl}/Usuario/responsables-ticket/select`;
 
   getTickets(pagina: number, tamanoPagina: number, filters?: TicketFilters) {
     let params = new HttpParams()
@@ -144,6 +145,16 @@ export class TicketBandejaService {
     }
 
     return this.http.get<UsuarioSelect[]>(this.usuarioSelectUrl, { params });
+  }
+
+  getResponsablesTicketSelect(idTicket: number, buscar?: string) {
+    let params = new HttpParams().set('idTicket', idTicket);
+
+    if (buscar?.trim()) {
+      params = params.set('buscar', buscar.trim());
+    }
+
+    return this.http.get<UsuarioSelect[]>(this.responsableTicketSelectUrl, { params });
   }
 
   getRelaciones(idTicket: number, incluirInactivos = false) {

@@ -18,6 +18,9 @@
           </option>
         }
       </select>
+      @if (data.usuarios.length === 0) {
+        <span class="mt-2 block text-sm text-amber-700">No hay responsables disponibles para la categoria de este ticket.</span>
+      }
       @if (form.controls.idUsuarioAsignado.touched && form.controls.idUsuarioAsignado.invalid) {
         <span class="mt-2 block text-sm text-red-600">Selecciona un usuario.</span>
       }

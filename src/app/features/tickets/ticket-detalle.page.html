@@ -12,7 +12,7 @@
             <button
               class="h-11 rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
               type="button"
-              [disabled]="assigningTicket() || loadingUsuarios()"
+              [disabled]="assigningTicket() || loadingUsuarios() || ticketEstaEnEstadoFinal()"
               (click)="openAsignarUsuarioModal()"
             >
               Asignar usuario
@@ -20,6 +20,15 @@
           }
 
           @if (esSolicitanteTicket()) {
+            <button
+              class="h-11 rounded-lg border border-indigo-200 bg-white px-5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+              type="button"
+              [disabled]="changingEstado() || !puedeReabrirTicket()"
+              (click)="openReabrirTicketModal()"
+            >
+              Reabrir ticket
+            </button>
+
             <button
               class="h-11 rounded-lg border border-red-200 bg-white px-5 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
               type="button"

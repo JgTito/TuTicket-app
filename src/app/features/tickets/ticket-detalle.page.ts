@@ -29,7 +29,13 @@ import {
   TicketCancelarDialogResult
 } from './ticket-cancelar-dialog.component';
 import {
+  TicketReabrirDialogComponent,
+  TicketReabrirDialogData,
+  TicketReabrirDialogResult
+} from './ticket-reabrir-dialog.component';
+import {
   EstadoDisponibleTicket,
+  EstadoTicketOption,
   Ticket,
   TicketAdjunto,
   TicketBitacora,
@@ -46,6 +52,7 @@ import {
 } from './ticket-cambiar-estado-dialog.component';
 
 type DetailTab = 'resumen' | 'sla' | 'adjuntos' | 'bitacora' | 'historial' | 'relaciones';
+const ESTADO_REABIERTO_ID = 8;
 const ESTADO_CERRADO_ID = 9;
 const ESTADO_CANCELADO_ID = 10;
 
@@ -67,6 +74,7 @@ export class TicketDetallePage {
   readonly relaciones = signal<TicketRelacion[]>([]);
   readonly slas = signal<TicketSla[]>([]);
   readonly usuarios = signal<UsuarioSelect[]>([]);
+  readonly estados = signal<EstadoTicketOption[]>([]);
   readonly estadosDisponibles = signal<EstadoDisponibleTicket[]>([]);
   readonly loading = signal(true);
   readonly loadingAdjuntos = signal(false);
@@ -119,15 +127,18 @@ export class TicketDetallePage {
 
     forkJoin({
       ticket: this.ticketService.getTicket(idTicket),
+      estados: this.ticketService.getEstadosSelect(),
       estadosDisponibles: this.ticketService.getEstadosDisponibles(idTicket),
       relaciones: this.ticketService.getRelaciones(idTicket),
       slas: this.ticketService.getSla(idTicket)
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ ticket, estadosDisponibles, relaciones, slas }) => {
+        next: ({ ticket, estados, estadosDisponibles, relaciones, slas }) => {
+          const estadosResponse = estados as typeof estados & { Datos?: unknown[] };
           const normalizedTicket = this.normalizeTicket(ticket);
           this.ticket.set(normalizedTicket);
+          this.estados.set((estadosResponse.datos ?? estadosResponse.Datos ?? []).map((estado) => this.normalizeEstado(estado)));
           this.estadosDisponibles.set((estadosDisponibles ?? []).map((estado) => this.normalizeEstadoDisponible(estado)));
           this.relaciones.set((relaciones ?? []).map((item) => this.normalizeRelacion(item)));
           this.slas.set((slas ?? []).map((item) => this.normalizeSla(item)));
@@ -341,8 +352,19 @@ export class TicketDetallePage {
     return this.estadosDisponibles().some((estado) => estado.idEstadoTicket === ESTADO_CERRADO_ID);
   }
 
+  puedeReabrirTicket(): boolean {
+    return this.estadosDisponibles().some((estado) => estado.idEstadoTicket === ESTADO_REABIERTO_ID);
+  }
+
   puedeCancelarTicket(): boolean {
     return this.estadosDisponibles().some((estado) => estado.idEstadoTicket === ESTADO_CANCELADO_ID);
+  }
+
+  ticketEstaEnEstadoFinal(): boolean {
+    const ticket = this.ticket();
+    if (!ticket) return false;
+
+    return this.estados().some((estado) => estado.idEstadoTicket === ticket.idEstadoTicket && estado.esEstadoFinal);
   }
 
   openAceptarResolucionModal(): void {
@@ -390,10 +412,36 @@ export class TicketDetallePage {
       });
   }
 
+  openReabrirTicketModal(): void {
+    const ticket = this.ticket();
+
+    if (!ticket || !this.esSolicitanteTicket() || !this.puedeReabrirTicket()) {
+      return;
+    }
+
+    this.dialog
+      .open<TicketReabrirDialogComponent, TicketReabrirDialogData, TicketReabrirDialogResult>(TicketReabrirDialogComponent, {
+        width: '560px',
+        data: { codigoTicket: ticket.codigo },
+        disableClose: this.changingEstado()
+      })
+      .afterClosed()
+      .subscribe((request) => {
+        if (request) {
+          this.reabrirTicket(ticket.idTicket, request);
+        }
+      });
+  }
+
   openAsignarUsuarioModal(): void {
     const ticket = this.ticket();
 
     if (!ticket) return;
+
+    if (this.ticketEstaEnEstadoFinal()) {
+      this.errorMessage.set('No se puede asignar usuario porque el ticket esta en un estado final.');
+      return;
+    }
 
     if (this.usuarios().length > 0) {
       this.showAsignarUsuarioModal(ticket);
@@ -404,7 +452,7 @@ export class TicketDetallePage {
     this.errorMessage.set(null);
 
     this.ticketService
-      .getUsuariosSelect(false)
+      .getResponsablesTicketSelect(ticket.idTicket)
       .pipe(finalize(() => this.loadingUsuarios.set(false)))
       .subscribe({
         next: (usuarios) => {
@@ -574,6 +622,13 @@ export class TicketDetallePage {
     });
   }
 
+  private reabrirTicket(idTicket: number, request: TicketReabrirDialogResult): void {
+    this.cambiarEstado(idTicket, {
+      idEstadoTicket: ESTADO_REABIERTO_ID,
+      comentario: request.comentario
+    });
+  }
+
   private showAsignarUsuarioModal(ticket: Ticket): void {
     this.dialog
       .open<TicketAsignarUsuarioDialogComponent, TicketAsignarUsuarioDialogData, TicketAsignarUsuarioDialogResult>(
@@ -651,6 +706,16 @@ export class TicketDetallePage {
       esEstadoFinal: this.pickBoolean(item, 'esEstadoFinal', 'EsEstadoFinal'),
       orden: this.pickNumber(item, 'orden', 'Orden'),
       requiereComentario: this.pickBoolean(item, 'requiereComentario', 'RequiereComentario')
+    };
+  }
+
+  private normalizeEstado(value: unknown): EstadoTicketOption {
+    const item = value as Record<string, unknown>;
+    return {
+      idEstadoTicket: this.pickNumber(item, 'idEstadoTicket', 'IdEstadoTicket'),
+      nombre: this.pickString(item, 'nombre', 'Nombre'),
+      esEstadoFinal: this.pickBoolean(item, 'esEstadoFinal', 'EsEstadoFinal'),
+      orden: this.pickNumber(item, 'orden', 'Orden')
     };
   }
 
