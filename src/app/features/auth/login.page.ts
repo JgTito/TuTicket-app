@@ -32,7 +32,7 @@ export class LoginPage {
 
     this.loading.set(true);
     this.authService.login(this.form.getRawValue()).subscribe({
-      next: () => void this.router.navigateByUrl('/app'),
+      next: () => void this.router.navigateByUrl(this.authService.isAdmin() ? '/app' : '/tickets'),
       error: (error: HttpErrorResponse) => {
         this.errorMessage.set(this.getErrorMessage(error));
         this.loading.set(false);

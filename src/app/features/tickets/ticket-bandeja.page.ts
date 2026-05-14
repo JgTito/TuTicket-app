@@ -85,8 +85,7 @@ export class TicketBandejaPage {
 
     this.ticketService.getEstadosSelect().subscribe({
       next: (estados) => {
-        const response = estados as typeof estados & { Datos?: unknown[] };
-        this.estados.set((response.datos ?? response.Datos ?? []).map((estado) => this.normalizeEstado(estado)));
+        this.estados.set((estados ?? []).map((estado) => this.normalizeEstado(estado)));
       },
       error: () => this.estados.set([])
     });

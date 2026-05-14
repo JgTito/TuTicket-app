@@ -27,7 +27,7 @@ export class TicketBandejaService {
   private readonly http = inject(HttpClient);
   private readonly ticketUrl = `${environment.apiUrl}/Ticket`;
   private readonly adjuntoUrl = `${environment.apiUrl}/TicketAdjunto`;
-  private readonly estadoUrl = `${environment.apiUrl}/EstadoTicket`;
+  private readonly estadoSelectUrl = `${environment.apiUrl}/EstadoTicket/select`;
   private readonly categoriaSelectUrl = `${environment.apiUrl}/CategoriaTicket/select`;
   private readonly prioridadSelectUrl = `${environment.apiUrl}/PrioridadTicket/select`;
   private readonly subcategoriaSelectUrl = `${environment.apiUrl}/SubcategoriaTicket/select`;
@@ -78,11 +78,8 @@ export class TicketBandejaService {
   }
 
   getEstadosSelect() {
-    const params = new HttpParams()
-      .set('incluirInactivos', false)
-      .set('pagina', 1)
-      .set('tamanoPagina', 100);
-    return this.http.get<PaginatedResult<EstadoTicketOption>>(this.estadoUrl, { params });
+    const params = new HttpParams().set('incluirInactivos', false);
+    return this.http.get<EstadoTicketOption[]>(this.estadoSelectUrl, { params });
   }
 
   getCategoriasSelect() {

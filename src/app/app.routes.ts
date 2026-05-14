@@ -24,7 +24,8 @@ export const routes: Routes = [
     children: [
       {
         path: 'app',
-        loadComponent: () => import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage)
+        loadComponent: () => import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
+        canActivate: [adminGuard]
       },
       {
         path: 'tickets',
@@ -37,6 +38,11 @@ export const routes: Routes = [
       {
         path: 'notificaciones',
         loadComponent: () => import('./features/notificaciones/notificaciones.page').then((m) => m.NotificacionesPage)
+      },
+      {
+        path: 'admin/usuarios',
+        loadComponent: () => import('./features/admin-usuario/admin-usuario.page').then((m) => m.AdminUsuarioPage),
+        canActivate: [adminGuard]
       },
       {
         path: 'admin/estados-ticket',

@@ -20,9 +20,10 @@ export class AppLayoutComponent {
   readonly notificacionService = inject(NotificacionService);
 
   readonly navItems: NavItem[] = [
-    { label: 'Panel', route: '/app' },
+    { label: 'Panel', route: '/app', adminOnly: true },
     { label: 'Tickets', route: '/tickets' },
     { label: 'Notificaciones', route: '/notificaciones' },
+    { label: 'Usuarios', route: '/admin/usuarios', adminOnly: true },
     { label: 'Estados', route: '/admin/estados-ticket', adminOnly: true },
     { label: 'Flujos', route: '/admin/flujos-estado-ticket', adminOnly: true },
     { label: 'Prioridades', route: '/admin/prioridades-ticket', adminOnly: true },

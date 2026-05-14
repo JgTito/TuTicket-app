@@ -21,7 +21,7 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/app']);
+  return router.createUrlTree([authService.isAdmin() ? '/app' : '/tickets']);
 };
 
 export const adminGuard: CanActivateFn = () => {
@@ -36,5 +36,5 @@ export const adminGuard: CanActivateFn = () => {
     return router.createUrlTree(['/login']);
   }
 
-  return router.createUrlTree(['/app']);
+  return router.createUrlTree(['/tickets']);
 };

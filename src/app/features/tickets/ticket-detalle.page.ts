@@ -135,10 +135,9 @@ export class TicketDetallePage {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: ({ ticket, estados, estadosDisponibles, relaciones, slas }) => {
-          const estadosResponse = estados as typeof estados & { Datos?: unknown[] };
           const normalizedTicket = this.normalizeTicket(ticket);
           this.ticket.set(normalizedTicket);
-          this.estados.set((estadosResponse.datos ?? estadosResponse.Datos ?? []).map((estado) => this.normalizeEstado(estado)));
+          this.estados.set((estados ?? []).map((estado) => this.normalizeEstado(estado)));
           this.estadosDisponibles.set((estadosDisponibles ?? []).map((estado) => this.normalizeEstadoDisponible(estado)));
           this.relaciones.set((relaciones ?? []).map((item) => this.normalizeRelacion(item)));
           this.slas.set((slas ?? []).map((item) => this.normalizeSla(item)));
