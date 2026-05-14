@@ -23,17 +23,32 @@ export interface Ticket {
   cantidadReaperturas: number;
 }
 
+export interface TicketSelectOption {
+  idTicket: number;
+  codigo: string;
+  titulo: string;
+  descripcion: string | null;
+  nombreEstadoTicket: string;
+}
+
 export interface CrearTicketRequest {
   titulo: string;
   descripcion: string;
   idPrioridadTicket: number;
   idSubcategoriaTicket: number;
+  relaciones: CrearTicketRelacionRequest[];
   archivos: File[];
 }
 
 export interface AsignarTicketRequest {
   idUsuarioAsignado: string;
   comentario: string | null;
+}
+
+export interface CrearTicketRelacionRequest {
+  idTicketRelacionado: number;
+  idTipoRelacionTicket: number;
+  observacion: string | null;
 }
 
 export interface UsuarioSelect {
@@ -137,6 +152,12 @@ export interface TicketRelacion {
   nombreUsuarioCreacion: string;
   fechaCreacion: string;
   activo: boolean;
+}
+
+export interface TipoRelacionTicketOption {
+  idTipoRelacionTicket: number;
+  nombre: string;
+  descripcion: string | null;
 }
 
 export interface TicketSla {

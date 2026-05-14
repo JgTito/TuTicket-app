@@ -34,6 +34,11 @@ import {
   TicketReabrirDialogResult
 } from './ticket-reabrir-dialog.component';
 import {
+  TicketRelacionFormDialogComponent,
+  TicketRelacionFormDialogData,
+  TicketRelacionFormDialogResult
+} from './ticket-relacion-form-dialog.component';
+import {
   EstadoDisponibleTicket,
   EstadoTicketOption,
   Ticket,
@@ -42,6 +47,7 @@ import {
   TicketHistorial,
   TicketRelacion,
   TicketSla,
+  TipoRelacionTicketOption,
   UsuarioSelect
 } from './ticket-bandeja.models';
 import { TicketBandejaService } from './ticket-bandeja.service';
@@ -74,17 +80,21 @@ export class TicketDetallePage {
   readonly relaciones = signal<TicketRelacion[]>([]);
   readonly slas = signal<TicketSla[]>([]);
   readonly usuarios = signal<UsuarioSelect[]>([]);
+  readonly tiposRelacion = signal<TipoRelacionTicketOption[]>([]);
   readonly estados = signal<EstadoTicketOption[]>([]);
   readonly estadosDisponibles = signal<EstadoDisponibleTicket[]>([]);
   readonly loading = signal(true);
   readonly loadingAdjuntos = signal(false);
   readonly loadingBitacora = signal(false);
   readonly loadingHistorial = signal(false);
+  readonly loadingRelaciones = signal(false);
   readonly loadingUsuarios = signal(false);
+  readonly loadingTiposRelacion = signal(false);
   readonly uploadingAdjunto = signal(false);
   readonly savingBitacora = signal(false);
   readonly changingEstado = signal(false);
   readonly assigningTicket = signal(false);
+  readonly relatingTicket = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly isAdmin = this.authService.isAdmin;
   readonly bitacoraPagina = signal(1);
@@ -228,6 +238,23 @@ export class TicketDetallePage {
           this.historialTamanoPagina.set(response.tamanoPagina ?? response.TamanoPagina ?? this.historialTamanoPagina());
           this.historialTotalRegistros.set(response.totalRegistros ?? response.TotalRegistros ?? 0);
           this.historialTotalPaginas.set(response.totalPaginas ?? response.TotalPaginas ?? 0);
+        },
+        error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error))
+      });
+  }
+
+  loadRelaciones(idTicket = this.ticket()?.idTicket ?? 0): void {
+    if (!idTicket) return;
+
+    this.loadingRelaciones.set(true);
+    this.errorMessage.set(null);
+
+    this.ticketService
+      .getRelaciones(idTicket)
+      .pipe(finalize(() => this.loadingRelaciones.set(false)))
+      .subscribe({
+        next: (relaciones) => {
+          this.relaciones.set((relaciones ?? []).map((item) => this.normalizeRelacion(item)));
         },
         error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error))
       });
@@ -462,6 +489,31 @@ export class TicketDetallePage {
       });
   }
 
+  openRelacionModal(): void {
+    const ticket = this.ticket();
+
+    if (!ticket) return;
+
+    if (this.tiposRelacion().length > 0) {
+      this.showRelacionModal(ticket);
+      return;
+    }
+
+    this.loadingTiposRelacion.set(true);
+    this.errorMessage.set(null);
+
+    this.ticketService
+      .getTiposRelacionSelect()
+      .pipe(finalize(() => this.loadingTiposRelacion.set(false)))
+      .subscribe({
+        next: (tiposRelacion) => {
+          this.tiposRelacion.set((tiposRelacion ?? []).map((tipoRelacion) => this.normalizeTipoRelacion(tipoRelacion)));
+          this.showRelacionModal(ticket);
+        },
+        error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error))
+      });
+  }
+
   changeBitacoraPage(page: number): void {
     if (page < 1 || page > this.bitacoraTotalPaginas() || page === this.bitacoraPagina()) return;
     this.bitacoraPagina.set(page);
@@ -667,6 +719,44 @@ export class TicketDetallePage {
       });
   }
 
+  private showRelacionModal(ticket: Ticket): void {
+    this.dialog
+      .open<TicketRelacionFormDialogComponent, TicketRelacionFormDialogData, TicketRelacionFormDialogResult>(
+        TicketRelacionFormDialogComponent,
+        {
+          width: '900px',
+          maxWidth: '96vw',
+          maxHeight: '92vh',
+          data: {
+            idTicket: ticket.idTicket,
+            codigoTicket: ticket.codigo,
+            tiposRelacion: this.tiposRelacion()
+          },
+          disableClose: this.relatingTicket()
+        }
+      )
+      .afterClosed()
+      .subscribe((request) => {
+        if (request) this.createRelacion(ticket.idTicket, request);
+      });
+  }
+
+  private createRelacion(idTicket: number, request: TicketRelacionFormDialogResult): void {
+    this.relatingTicket.set(true);
+    this.errorMessage.set(null);
+
+    this.ticketService
+      .createRelacion(idTicket, request)
+      .pipe(finalize(() => this.relatingTicket.set(false)))
+      .subscribe({
+        next: () => {
+          this.activeTab.set('relaciones');
+          this.loadRelaciones(idTicket);
+        },
+        error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error))
+      });
+  }
+
   private normalizeTicket(value: unknown): Ticket {
     const item = value as Record<string, unknown>;
     return {
@@ -812,6 +902,15 @@ export class TicketDetallePage {
       nombreCompleto: this.pickString(item, 'nombreCompleto', 'NombreCompleto'),
       email: this.pickNullableString(item, 'email', 'Email'),
       userName: this.pickNullableString(item, 'userName', 'UserName')
+    };
+  }
+
+  private normalizeTipoRelacion(value: unknown): TipoRelacionTicketOption {
+    const item = value as Record<string, unknown>;
+    return {
+      idTipoRelacionTicket: this.pickNumber(item, 'idTipoRelacionTicket', 'IdTipoRelacionTicket'),
+      nombre: this.pickString(item, 'nombre', 'Nombre'),
+      descripcion: this.pickNullableString(item, 'descripcion', 'Descripcion')
     };
   }
 

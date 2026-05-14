@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import {
   CategoriaTicketOption,
   AsignarTicketRequest,
+  CrearTicketRelacionRequest,
   CrearTicketRequest,
   EstadoTicketOption,
   PaginatedResult,
@@ -16,7 +17,9 @@ import {
   TicketBitacora,
   TicketHistorial,
   TicketRelacion,
+  TicketSelectOption,
   TicketSla,
+  TipoRelacionTicketOption,
   UsuarioSelect
 } from './ticket-bandeja.models';
 
@@ -33,6 +36,7 @@ export class TicketBandejaService {
   private readonly subcategoriaSelectUrl = `${environment.apiUrl}/SubcategoriaTicket/select`;
   private readonly usuarioSelectUrl = `${environment.apiUrl}/Usuario/select`;
   private readonly responsableTicketSelectUrl = `${environment.apiUrl}/Usuario/responsables-ticket/select`;
+  private readonly tipoRelacionSelectUrl = `${environment.apiUrl}/TipoRelacionTicket/select`;
 
   getTickets(pagina: number, tamanoPagina: number, filters?: TicketFilters) {
     let params = new HttpParams()
@@ -67,6 +71,14 @@ export class TicketBandejaService {
     formData.append('Descripcion', request.descripcion);
     formData.append('IdPrioridadTicket', String(request.idPrioridadTicket));
     formData.append('IdSubcategoriaTicket', String(request.idSubcategoriaTicket));
+    request.relaciones.forEach((relacion, index) => {
+      formData.append(`Relaciones[${index}].IdTicketRelacionado`, String(relacion.idTicketRelacionado));
+      formData.append(`Relaciones[${index}].IdTipoRelacionTicket`, String(relacion.idTipoRelacionTicket));
+
+      if (relacion.observacion) {
+        formData.append(`Relaciones[${index}].Observacion`, relacion.observacion);
+      }
+    });
     request.archivos.forEach((archivo) => formData.append('Archivos', archivo));
 
     return this.http.post<Ticket>(this.ticketUrl, formData);
@@ -157,6 +169,29 @@ export class TicketBandejaService {
   getRelaciones(idTicket: number, incluirInactivos = false) {
     const params = new HttpParams().set('incluirInactivos', incluirInactivos);
     return this.http.get<TicketRelacion[]>(`${this.ticketUrl}/${idTicket}/relaciones`, { params });
+  }
+
+  createRelacion(idTicket: number, request: CrearTicketRelacionRequest) {
+    return this.http.post<TicketRelacion>(`${this.ticketUrl}/${idTicket}/relaciones`, request);
+  }
+
+  getTiposRelacionSelect() {
+    const params = new HttpParams().set('incluirInactivos', false);
+    return this.http.get<TipoRelacionTicketOption[]>(this.tipoRelacionSelectUrl, { params });
+  }
+
+  getTicketsRelacionables(idTicketExcluir?: number | null, buscar?: string) {
+    let params = new HttpParams().set('tamanoPagina', 25);
+
+    if (idTicketExcluir) {
+      params = params.set('idTicketExcluir', idTicketExcluir);
+    }
+
+    if (buscar?.trim()) {
+      params = params.set('buscar', buscar.trim());
+    }
+
+    return this.http.get<TicketSelectOption[]>(`${this.ticketUrl}/select-relacionables`, { params });
   }
 
   getSla(idTicket: number, incluirInactivos = false) {

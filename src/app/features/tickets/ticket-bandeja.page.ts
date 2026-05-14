@@ -126,8 +126,9 @@ export class TicketBandejaPage {
   openCreateModal(): void {
     this.dialog
       .open<TicketCreateDialogComponent, TicketCreateDialogData, CrearTicketRequest>(TicketCreateDialogComponent, {
-        width: '760px',
-        maxHeight: '90vh',
+        width: '1100px',
+        maxWidth: '96vw',
+        maxHeight: '92vh',
         data: {
           categorias: this.categorias(),
           prioridades: this.prioridades(),
