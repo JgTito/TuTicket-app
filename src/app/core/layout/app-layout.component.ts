@@ -23,6 +23,7 @@ export class AppLayoutComponent {
     { label: 'Panel', route: '/app', adminOnly: true },
     { label: 'Tickets', route: '/tickets' },
     { label: 'Notificaciones', route: '/notificaciones' },
+    { label: 'Informe IA', route: '/admin/informe-ia-soporte', adminOnly: true },
     { label: 'Usuarios', route: '/admin/usuarios', adminOnly: true },
     { label: 'Estados', route: '/admin/estados-ticket', adminOnly: true },
     { label: 'Flujos', route: '/admin/flujos-estado-ticket', adminOnly: true },

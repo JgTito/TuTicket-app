@@ -45,6 +45,11 @@ export const routes: Routes = [
         canActivate: [adminGuard]
       },
       {
+        path: 'admin/informe-ia-soporte',
+        loadComponent: () => import('./features/informe-ia-soporte/informe-ia-soporte.page').then((m) => m.InformeIaSoportePage),
+        canActivate: [adminGuard]
+      },
+      {
         path: 'admin/estados-ticket',
         loadComponent: () => import('./features/estado-ticket/estado-ticket.page').then((m) => m.EstadoTicketPage),
         canActivate: [adminGuard]
