@@ -14,7 +14,7 @@ export class InformeIaSoportePage {
   readonly anio = signal(new Date().getFullYear());
   readonly mes = signal(new Date().getMonth() + 1);
   readonly limiteTicketsMuestra = signal(40);
-  readonly formato = signal<DescargarInformeIaRequest['formato']>('markdown');
+  readonly formato = signal<DescargarInformeIaRequest['formato']>('pdf');
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
@@ -116,7 +116,7 @@ export class InformeIaSoportePage {
   }
 
   private crearNombreArchivoFallback(): string {
-    const extension = this.formato() === 'txt' ? 'txt' : 'md';
+    const extension = this.formato() === 'pdf' ? 'pdf' : this.formato() === 'txt' ? 'txt' : 'md';
     return `informe-soporte-${this.anio()}-${this.mes().toString().padStart(2, '0')}.${extension}`;
   }
 
@@ -156,7 +156,7 @@ export class InformeIaSoportePage {
     if (error.status === 0) return 'No se pudo conectar con la API.';
     if (error.status === 401 || error.status === 403) return 'Tu sesion no tiene permisos para generar informes IA.';
     if (error.status === 400) return 'La API rechazo los parametros del informe.';
-    if (error.status === 502) return 'No fue posible generar el informe IA. Revisa la configuracion de Gemini en la API.';
+    if (error.status === 502) return 'No fue posible generar el informe IA. Revisa la configuracion del generador en la API.';
     return 'Ocurrio un error al generar el informe IA.';
   }
 }

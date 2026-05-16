@@ -7,7 +7,7 @@ export interface DescargarInformeIaRequest {
   anio: number;
   mes: number;
   limiteTicketsMuestra: number;
-  formato: 'markdown' | 'md' | 'txt';
+  formato: 'pdf' | 'markdown' | 'md' | 'txt';
 }
 
 @Injectable({
