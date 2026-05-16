@@ -56,6 +56,8 @@ import {
   TicketCambiarEstadoDialogData,
   TicketCambiarEstadoDialogResult
 } from './ticket-cambiar-estado-dialog.component';
+import { getEstadoTicketBadgeClass } from './ticket-estado-style';
+import { getPrioridadTicketBadgeClass } from './ticket-prioridad-style';
 
 type DetailTab = 'resumen' | 'sla' | 'adjuntos' | 'bitacora' | 'historial' | 'relaciones';
 const ESTADO_REABIERTO_ID = 8;
@@ -270,6 +272,14 @@ export class TicketDetallePage {
     if (value < 1024) return `${value} B`;
     if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
     return `${(value / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  prioridadBadgeClass(ticket: Ticket | null): string {
+    return getPrioridadTicketBadgeClass(ticket?.idPrioridadTicket, ticket?.nombrePrioridadTicket);
+  }
+
+  estadoBadgeClass(ticket: Ticket | null): string {
+    return getEstadoTicketBadgeClass(ticket?.idEstadoTicket, ticket?.nombreEstadoTicket);
   }
 
   downloadAdjunto(adjunto: TicketAdjunto): void {

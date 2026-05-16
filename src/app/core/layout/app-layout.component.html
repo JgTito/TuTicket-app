@@ -3,7 +3,6 @@
     <div class="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex items-center justify-between gap-4">
         <a class="flex items-center gap-3" routerLink="/app">
-          <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-600 font-black text-white">T</span>
           <span>
             <span class="block text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">TuTicket</span>
             <span class="block text-base font-semibold text-slate-950">Administracion</span>
@@ -11,21 +10,73 @@
         </a>
       </div>
 
-      <nav class="flex flex-wrap gap-2">
-        @for (item of visibleNavItems(); track item.route) {
-          <a
-            class="inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
-            [routerLink]="item.route"
-            routerLinkActive="bg-teal-50 text-teal-700"
-            [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
-          >
-            <span>{{ item.label }}</span>
-            @if (item.route === '/notificaciones' && notificacionService.unreadCount() > 0) {
-              <span class="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold leading-none text-white">
-                {{ notificacionService.unreadCount() > 99 ? '99+' : notificacionService.unreadCount() }}
-              </span>
-            }
-          </a>
+      <nav class="flex flex-wrap items-center gap-2">
+        @for (entry of visibleNavEntries(); track entry.type + entry.label) {
+          @if (isDropdown(entry)) {
+            <div class="relative">
+              <button
+                class="inline-flex h-9 items-center gap-1 rounded-lg px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus:bg-slate-100 focus:text-slate-950 focus:outline-none"
+                [class.bg-teal-50]="isDropdownActive(entry) || isDropdownOpen(entry)"
+                [class.text-teal-700]="isDropdownActive(entry) || isDropdownOpen(entry)"
+                type="button"
+                aria-haspopup="true"
+                [attr.aria-expanded]="isDropdownOpen(entry)"
+                (click)="$event.stopPropagation(); toggleDropdown(entry.label)"
+              >
+                <span>{{ entry.label }}</span>
+                <svg
+                  class="h-4 w-4 text-slate-400 transition"
+                  [class.rotate-180]="isDropdownOpen(entry)"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+
+              <div
+                class="absolute left-0 top-full z-40 mt-2 w-64 transition"
+                [class.visible]="isDropdownOpen(entry)"
+                [class.invisible]="!isDropdownOpen(entry)"
+                [class.translate-y-0]="isDropdownOpen(entry)"
+                [class.translate-y-1]="!isDropdownOpen(entry)"
+                [class.opacity-100]="isDropdownOpen(entry)"
+                [class.opacity-0]="!isDropdownOpen(entry)"
+                [class.pointer-events-auto]="isDropdownOpen(entry)"
+                [class.pointer-events-none]="!isDropdownOpen(entry)"
+              >
+                <div class="rounded-lg border border-slate-200 bg-white py-2 shadow-xl shadow-slate-200/70">
+                  @for (item of entry.items; track item.route) {
+                    <a
+                      class="mx-2 flex h-10 items-center rounded-md px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+                      [class.bg-teal-50]="isLinkActive(item)"
+                      [class.text-teal-700]="isLinkActive(item)"
+                      [routerLink]="item.route"
+                      (click)="closeDropdowns()"
+                    >
+                      {{ item.label }}
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          } @else {
+            <a
+              class="inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+              [class.bg-teal-50]="isLinkActive(entry)"
+              [class.text-teal-700]="isLinkActive(entry)"
+              [routerLink]="entry.route"
+              (click)="closeDropdowns()"
+            >
+              <span>{{ entry.label }}</span>
+              @if (entry.badge === 'notifications' && notificacionService.unreadCount() > 0) {
+                <span class="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold leading-none text-white">
+                  {{ notificacionService.unreadCount() > 99 ? '99+' : notificacionService.unreadCount() }}
+                </span>
+              }
+            </a>
+          }
         }
       </nav>
 

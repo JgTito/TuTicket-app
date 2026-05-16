@@ -19,6 +19,8 @@ import {
   TicketFilters
 } from './ticket-bandeja.models';
 import { TicketBandejaService } from './ticket-bandeja.service';
+import { getEstadoTicketBadgeClass } from './ticket-estado-style';
+import { getPrioridadTicketBadgeClass } from './ticket-prioridad-style';
 
 @Component({
   selector: 'app-ticket-bandeja-page',
@@ -231,6 +233,14 @@ export class TicketBandejaPage {
       dateStyle: 'short',
       timeStyle: 'short'
     }).format(new Date(value));
+  }
+
+  prioridadBadgeClass(ticket: Ticket): string {
+    return getPrioridadTicketBadgeClass(ticket.idPrioridadTicket, ticket.nombrePrioridadTicket);
+  }
+
+  estadoBadgeClass(ticket: Ticket): string {
+    return getEstadoTicketBadgeClass(ticket.idEstadoTicket, ticket.nombreEstadoTicket);
   }
 
   private normalizeTicket(value: unknown): Ticket {
