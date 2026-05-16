@@ -1,5 +1,6 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CategoriaTicketOption,
@@ -39,9 +40,23 @@ export class TicketBandejaService {
   private readonly tipoRelacionSelectUrl = `${environment.apiUrl}/TipoRelacionTicket/select`;
 
   getTickets(pagina: number, tamanoPagina: number, filters?: TicketFilters) {
-    let params = new HttpParams()
+    const params = this.buildTicketFilterParams(filters)
       .set('pagina', pagina)
       .set('tamanoPagina', tamanoPagina);
+
+    return this.http.get<PaginatedResult<Ticket>>(this.ticketUrl, { params });
+  }
+
+  exportarTicketsExcel(filters?: TicketFilters): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.ticketUrl}/exportar-excel`, {
+      observe: 'response',
+      params: this.buildTicketFilterParams(filters),
+      responseType: 'blob'
+    });
+  }
+
+  private buildTicketFilterParams(filters?: TicketFilters): HttpParams {
+    let params = new HttpParams();
 
     if (filters?.idEstadoTicket) params = params.set('idEstadoTicket', filters.idEstadoTicket);
     if (filters?.idPrioridadTicket) params = params.set('idPrioridadTicket', filters.idPrioridadTicket);
@@ -58,7 +73,7 @@ export class TicketBandejaService {
     if (filters?.fechaCierreDesde) params = params.set('fechaCierreDesde', filters.fechaCierreDesde);
     if (filters?.fechaCierreHasta) params = params.set('fechaCierreHasta', filters.fechaCierreHasta);
 
-    return this.http.get<PaginatedResult<Ticket>>(this.ticketUrl, { params });
+    return params;
   }
 
   getTicket(idTicket: number) {

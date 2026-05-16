@@ -160,9 +160,17 @@
 
         <div class="mt-4 flex flex-wrap justify-end gap-3">
           <button
+            class="h-10 rounded-lg border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+            type="button"
+            [disabled]="loading() || exporting()"
+            (click)="exportarExcel()"
+          >
+            {{ exporting() ? 'Exportando...' : 'Exportar Excel' }}
+          </button>
+          <button
             class="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
             type="button"
-            [disabled]="loading()"
+            [disabled]="loading() || exporting()"
             (click)="clearFilters()"
           >
             Limpiar
@@ -170,7 +178,7 @@
           <button
             class="h-10 rounded-lg bg-teal-600 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             type="button"
-            [disabled]="loading()"
+            [disabled]="loading() || exporting()"
             (click)="applyFilters()"
           >
             Aplicar filtros

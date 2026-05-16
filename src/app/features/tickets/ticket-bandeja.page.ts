@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -42,6 +42,7 @@ export class TicketBandejaPage {
   readonly loadingSelects = signal(true);
   readonly loadingSubcategoriasFiltro = signal(false);
   readonly saving = signal(false);
+  readonly exporting = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly filtroEstado = signal(0);
   readonly filtroPrioridad = signal(0);
@@ -196,6 +197,19 @@ export class TicketBandejaPage {
     this.loadTickets();
   }
 
+  exportarExcel(): void {
+    this.exporting.set(true);
+    this.errorMessage.set(null);
+
+    this.ticketService
+      .exportarTicketsExcel(this.buildFilters())
+      .pipe(finalize(() => this.exporting.set(false)))
+      .subscribe({
+        next: (response) => this.downloadExcel(response),
+        error: (error: HttpErrorResponse) => this.handleExportError(error)
+      });
+  }
+
   changePage(page: number): void {
     if (page < 1 || page > this.totalPaginas() || page === this.pagina()) {
       return;
@@ -241,6 +255,40 @@ export class TicketBandejaPage {
 
   estadoBadgeClass(ticket: Ticket): string {
     return getEstadoTicketBadgeClass(ticket.idEstadoTicket, ticket.nombreEstadoTicket);
+  }
+
+  private downloadExcel(response: HttpResponse<Blob>): void {
+    const blob = response.body;
+
+    if (!blob) {
+      this.errorMessage.set('La API no devolvio contenido para exportar.');
+      return;
+    }
+
+    const filename = this.getFilenameFromResponse(response) ?? this.createExcelFilename();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private getFilenameFromResponse(response: HttpResponse<Blob>): string | null {
+    const header = response.headers.get('content-disposition') ?? response.headers.get('Content-Disposition');
+    if (!header) return null;
+
+    const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(header);
+    if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1].replace(/"/g, ''));
+
+    const filenameMatch = /filename="?([^";]+)"?/i.exec(header);
+    return filenameMatch?.[1] ?? null;
+  }
+
+  private createExcelFilename(): string {
+    const now = new Date();
+    const pad = (part: number) => part.toString().padStart(2, '0');
+    return `tickets-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.xlsx`;
   }
 
   private normalizeTicket(value: unknown): Ticket {
@@ -372,6 +420,45 @@ export class TicketBandejaPage {
 
   private pickBoolean(item: Record<string, unknown>, camel: string, pascal: string): boolean {
     return Boolean(item[camel] ?? item[pascal] ?? false);
+  }
+
+  private handleExportError(error: HttpErrorResponse): void {
+    if (error.error instanceof Blob) {
+      error.error.text().then((text) => {
+        this.errorMessage.set(this.parseProblemDetails(text) ?? this.getExportErrorMessage(error));
+      });
+      return;
+    }
+
+    this.errorMessage.set(this.getExportErrorMessage(error));
+  }
+
+  private parseProblemDetails(text: string): string | null {
+    if (!text.trim()) return null;
+
+    try {
+      const problem = JSON.parse(text) as Record<string, unknown>;
+      const detail = problem['detail'] ?? problem['Detail'];
+      const title = problem['title'] ?? problem['Title'];
+      const errors = problem['errors'] ?? problem['Errors'];
+
+      if (errors && typeof errors === 'object') {
+        return Object.values(errors as Record<string, unknown>)
+          .flatMap((value) => Array.isArray(value) ? value.map(String) : [String(value)])
+          .join(' ');
+      }
+
+      return detail ? String(detail) : title ? String(title) : null;
+    } catch {
+      return text;
+    }
+  }
+
+  private getExportErrorMessage(error: HttpErrorResponse): string {
+    if (error.status === 0) return 'No se pudo conectar con la API.';
+    if (error.status === 401 || error.status === 403) return 'Tu sesion no tiene permisos para exportar tickets.';
+    if (error.status === 400) return 'La API rechazo los filtros de exportacion.';
+    return 'Ocurrio un error al exportar los tickets.';
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {
